@@ -2,10 +2,17 @@ import json
 from datetime import date
 from typing import Any, Callable
 
-from sqlalchemy.orm import Session
+from app.schemas.announcement import AnnouncementPriority
+from app.schemas.common import Weekday
+from app.schemas.room import RoomAvailabilityQuery, RoomType
 
-from app.schemas.room import BookingCreate, RoomAvailabilityQuery
-from app.services import domain
+from .gateway import (
+    BookRoomCommand,
+    CampusDataGateway,
+    CancelBookingCommand,
+    CancelEventRegistrationCommand,
+    RegisterForEventCommand,
+)
 
 
 def _json(value: Any) -> str:
@@ -44,21 +51,51 @@ def tool_definitions() -> list[dict]:
 
 
 class CampusTools:
-    def __init__(self, session: Session, user_id: str) -> None:
-        self.session, self.user_id = session, user_id
+    def __init__(self, gateway: CampusDataGateway) -> None:
+        self.gateway = gateway
 
     def execute(self, name: str, args: dict, call_id: str) -> tuple[str, str]:
         handlers: dict[str, Callable[[], Any]] = {
             "get_my_schedules": lambda: self._schedules(args),
             "get_my_assignments": lambda: self._assignments(args),
             "get_announcements": lambda: self._announcements(args),
-            "get_events": lambda: domain.my_events(self.session, date.fromisoformat(args["on_date"])),
-            "list_rooms": lambda: domain.list_rooms(self.session, args.get("room_type"), "available", args.get("min_capacity"), args.get("equipment")),
-            "find_available_rooms": lambda: domain.available_rooms(self.session, RoomAvailabilityQuery(**args)),
-            "book_room": lambda: domain.book_room(self.session, args["room_id"], BookingCreate(booked_by="current user", date=args["date"], start_time=args["start_time"], end_time=args["end_time"], purpose=args["purpose"]), self.user_id, f"agent:{call_id}"),
-            "cancel_room_booking": lambda: domain.cancel_booking(self.session, args["room_id"], args["booking_id"], self.user_id),
-            "register_event": lambda: domain.register_for_event(self.session, args["event_id"], self.user_id, f"agent:{call_id}"),
-            "cancel_event_registration": lambda: self._cancel_registration(args),
+            "get_events": lambda: self.gateway.get_relevant_events(
+                date.fromisoformat(args["on_date"])
+            ),
+            "list_rooms": lambda: self.gateway.list_rooms(
+                RoomType(args["room_type"]) if args.get("room_type") else None,
+                args.get("min_capacity"),
+                tuple(args.get("equipment") or ()),
+            ),
+            "find_available_rooms": lambda: self.gateway.find_available_rooms(
+                RoomAvailabilityQuery(**args)
+            ),
+            "book_room": lambda: self.gateway.book_room(
+                BookRoomCommand(
+                    room_id=args["room_id"],
+                    date=args["date"],
+                    start_time=args["start_time"],
+                    end_time=args["end_time"],
+                    purpose=args["purpose"],
+                    idempotency_key=f"agent:{call_id}",
+                )
+            ),
+            "cancel_room_booking": lambda: self.gateway.cancel_my_booking(
+                CancelBookingCommand(
+                    room_id=args["room_id"], booking_id=args["booking_id"]
+                )
+            ),
+            "register_event": lambda: self.gateway.register_for_event(
+                RegisterForEventCommand(
+                    event_id=args["event_id"],
+                    idempotency_key=f"agent:{call_id}",
+                )
+            ),
+            "cancel_event_registration": lambda: (
+                self.gateway.cancel_my_event_registration(
+                    CancelEventRegistrationCommand(event_id=args["event_id"])
+                )
+            ),
         }
         if name not in handlers: raise ValueError(f"Unknown tool: {name}")
         result = handlers[name]()
@@ -66,22 +103,21 @@ class CampusTools:
         return _json(result), summary
 
     def _schedules(self, args):
-        items = domain.my_schedules(self.session, self.user_id)
-        return [item for item in items if not args.get("day") or item.day == args["day"]]
+        day = Weekday(args["day"]) if args.get("day") else None
+        return self.gateway.get_my_schedules(day)
 
     def _assignments(self, args):
-        items = domain.my_assignments(self.session, self.user_id)
-        if args.get("due_from"): items = [i for i in items if i.deadline >= date.fromisoformat(args["due_from"])]
-        if args.get("due_to"): items = [i for i in items if i.deadline <= date.fromisoformat(args["due_to"])]
-        return items
+        due_from = date.fromisoformat(args["due_from"]) if args.get("due_from") else None
+        due_to = date.fromisoformat(args["due_to"]) if args.get("due_to") else None
+        return self.gateway.get_my_assignments(due_from, due_to)
 
     def _announcements(self, args):
-        items = domain.my_announcements(self.session, date.fromisoformat(args["on_date"]))
-        return [i for i in items if not args.get("priority") or i.priority == args["priority"]]
-
-    def _cancel_registration(self, args):
-        user = domain.get_current_user(self.session, self.user_id)
-        return domain.cancel_registration(self.session, args["event_id"], self.user_id, user.student_id)
+        priority = (
+            AnnouncementPriority(args["priority"]) if args.get("priority") else None
+        )
+        return self.gateway.get_active_announcements(
+            date.fromisoformat(args["on_date"]), priority
+        )
 
     @staticmethod
     def _summary(name: str, result: Any) -> str:

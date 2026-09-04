@@ -6,7 +6,9 @@ from fastapi import APIRouter, Depends, Header, Query, Request, status
 from sqlalchemy.orm import Session
 
 from app.schemas import *
+from app.schemas.agent import AgentStatus
 from app.schemas.common import DeleteResponse
+from app.agent import ServiceCampusDataGateway
 from app.services import domain
 
 
@@ -59,7 +61,11 @@ def agent_messages(request: Request, db: Db, payload: AgentMessageRequest) -> Ag
     orchestrator = request.app.state.agent
     if orchestrator is None:
         raise AgentUnavailableError("The agent provider is not configured. Set GEMINI_API_KEY.")
-    return orchestrator.run(db, payload.message, payload.conversation_id)
+    gateway = ServiceCampusDataGateway(db, router.demo_user_id)
+    response = orchestrator.run(gateway, payload.message, payload.conversation_id)
+    if response.status in {AgentStatus.FAILED, AgentStatus.REFUSED}:
+        db.rollback()
+    return response
 
 
 @router.get("/schedules", response_model=ScheduleListResponse)

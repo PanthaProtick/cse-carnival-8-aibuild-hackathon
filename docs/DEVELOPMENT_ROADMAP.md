@@ -271,10 +271,15 @@ Status: **Complete**
 
 ## M6 — AI agent and real tool calling
 
-Status: **Complete**
+Status: **In progress — inherited implementation is being hardened against the agent integration plan**
 
 ### Tasks
 
+- [x] Define a request-scoped `CampusDataGateway` contract that keeps SQLAlchemy
+  sessions and caller-supplied identities out of agent tools.
+- [x] Add fake and service-backed gateway implementations.
+- [x] Refactor existing tools to depend on the gateway instead of calling domain
+  services directly.
 - [x] Select and configure one tool-calling LLM provider behind a small adapter.
 - [x] Create the CampusOS system prompt and bounded agent loop.
 - [x] Implement read tools for personalized schedules, assignments,

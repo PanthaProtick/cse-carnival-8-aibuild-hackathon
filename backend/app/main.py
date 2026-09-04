@@ -65,8 +65,15 @@ def create_app(settings: Settings | None = None, agent_provider: ToolCallingProv
     app = FastAPI(title="CampusOS API", version="1.0.0", lifespan=lifespan)
     if agent_provider is None and settings.gemini_api_key:
         agent_provider = GeminiProvider(settings.gemini_api_key, settings.gemini_model, settings.agent_timeout_seconds)
-    app.state.agent = (AgentOrchestrator(agent_provider, settings.demo_user_id, settings.app_timezone,
-                                         settings.agent_max_rounds) if agent_provider else None)
+    app.state.agent = (
+        AgentOrchestrator(
+            agent_provider,
+            settings.app_timezone,
+            settings.agent_max_rounds,
+        )
+        if agent_provider
+        else None
+    )
     app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, allow_credentials=True,
                        allow_methods=["*"], allow_headers=["*"])
     api.router.demo_user_id = settings.demo_user_id
