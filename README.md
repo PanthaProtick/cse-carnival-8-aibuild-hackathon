@@ -108,6 +108,20 @@ Submit your fork's public URL via the instructions in [`SUBMISSION.md`](./SUBMIS
 
 > **Important:** These JSON files are only the starting/seed data — not the database itself. Load them into a real backend (a database, or at minimum a backend service with persistent storage) on app startup. Your dashboard and AI agent must both read from and write to that backend, not the static JSON files directly. If you add, edit, or delete a record, the change must be saved in your backend and still be there after a reload — the JSON files in this repo will not update. The agent is also expected to always query the current backend state, not a cached or hardcoded copy of the seed data.
 
+## Agent provider
+
+CampusOS uses Gemini native function calling through Google's official
+`google-genai` Python SDK. Configure the backend with:
+
+```env
+GEMINI_API_KEY=your_key_here
+GEMINI_MODEL=gemini-2.5-flash
+```
+
+The API key remains server-side. The model can access campus data only through
+the registered service-backed tools; it cannot receive database credentials or
+execute arbitrary SQL.
+
 ---
 
 Good luck. Build something that actually works.

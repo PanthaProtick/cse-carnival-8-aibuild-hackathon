@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-04  
 Target: AI Build Hackathon MVP  
-Status: **contract and relevance foundation complete; runnable application not yet implemented**
+Status: **backend API and AI agent complete; frontend not yet implemented**
 
 ## 1. Product objective
 
@@ -182,20 +182,20 @@ claims and per-user assignment progress.
 
 ## M3 — SQLite persistence and safe seed import
 
-Status: **Not started**
+Status: **Complete**
 
 ### Tasks
 
-- [ ] Add SQLAlchemy 2 and Alembic dependencies.
-- [ ] Define normalized database models for users, enrollments, schedules, rooms,
+- [x] Add SQLAlchemy 2 and Alembic dependencies.
+- [x] Define normalized database models for users, enrollments, schedules, rooms,
   bookings, events, registrations, announcements, and assignments.
-- [ ] Add foreign keys, unique constraints, indexes, and cascade behavior.
-- [ ] Store bookings and registrations as tables rather than mutable JSON arrays.
-- [ ] Implement a transaction-scoped database session dependency.
-- [ ] Implement seed import that runs only when the database is empty.
-- [ ] Preserve supplied IDs and generate collision-resistant IDs for new records.
-- [ ] Ensure application restarts never overwrite edited data.
-- [ ] Add migration and seed-import tests.
+- [x] Add foreign keys, unique constraints, indexes, and cascade behavior.
+- [x] Store bookings and registrations as tables rather than mutable JSON arrays.
+- [x] Implement a transaction-scoped database session dependency.
+- [x] Implement seed import that runs only when the database is empty.
+- [x] Preserve supplied IDs and generate collision-resistant IDs for new records.
+- [x] Ensure application restarts never overwrite edited data.
+- [x] Add migration and seed-import tests.
 
 ### Required database protections
 
@@ -208,104 +208,104 @@ Status: **Not started**
 
 ### Exit criteria
 
-- [ ] All seed data imports into a new database.
-- [ ] Restarting with a populated database leaves changes untouched.
-- [ ] CRUD mutations survive process restart.
-- [ ] A failed multi-step write leaves no partial data.
+- [x] All seed data imports into a new database.
+- [x] Restarting with a populated database leaves changes untouched.
+- [x] CRUD mutations survive process restart.
+- [x] A failed multi-step write leaves no partial data.
 
 ---
 
 ## M4 — Shared domain and transaction services
 
-Status: **Relevance functions complete; persistence-backed services not started**
+Status: **Complete**
 
 ### Tasks
 
 - [x] Implement pure user-relevance functions.
-- [ ] Implement CRUD services for all five systems.
-- [ ] Implement current-user lookup from `DEMO_USER_ID`.
-- [ ] Implement room availability across both dated bookings and recurring
+- [x] Implement CRUD services for all five systems.
+- [x] Implement current-user lookup from `DEMO_USER_ID`.
+- [x] Implement room availability across both dated bookings and recurring
   schedules.
-- [ ] Use half-open intervals `[start, end)` so back-to-back bookings are valid.
-- [ ] Recheck room availability and insert the booking in one transaction.
-- [ ] Implement idempotency-key storage for mutation retries.
-- [ ] Register for an event transactionally with duplicate and capacity checks.
-- [ ] Cancel only the current user's bookings and registrations unless admin.
-- [ ] Implement personalized “my schedule,” “my assignments,” and relevant-event
+- [x] Use half-open intervals `[start, end)` so back-to-back bookings are valid.
+- [x] Recheck room availability and insert the booking in one transaction.
+- [x] Implement idempotency-key storage for mutation retries.
+- [x] Register for an event transactionally with duplicate and capacity checks.
+- [x] Cancel only the current user's bookings and registrations unless admin.
+- [x] Implement personalized “my schedule,” “my assignments,” and relevant-event
   queries.
-- [ ] Add unit tests for collision boundaries, duplicates, full events, missing
+- [x] Add unit tests for collision boundaries, duplicates, full events, missing
   records, and unauthorized actions.
 
 ### Exit criteria
 
-- [ ] Routes and agent tools can use the same service functions.
-- [ ] No business rule exists only in a route, React component, prompt, or tool.
-- [ ] Concurrent/retried actions do not create obvious duplicate mutations.
+- [x] Routes and agent tools can use the same service functions.
+- [x] No business rule exists only in a route, React component, prompt, or tool.
+- [x] Concurrent/retried actions do not create obvious duplicate mutations.
 
 ---
 
 ## M5 — FastAPI application and mock boundary
 
-Status: **Not started**
+Status: **Complete**
 
 ### Tasks
 
-- [ ] Create the FastAPI application factory and settings model.
-- [ ] Add `/health` and `/api/v1` routers.
-- [ ] Implement all resource CRUD routes from the contract.
-- [ ] Implement `/users/me` and personalized read routes.
-- [ ] Implement room availability/booking and event registration routes.
-- [ ] Convert Pydantic and service errors to the standard error envelope.
-- [ ] Configure local CORS for the React development origin.
-- [ ] Generate and inspect OpenAPI output.
-- [ ] Add API integration tests using an isolated temporary SQLite database.
-- [ ] Provide contract-matching mock fixtures for frontend parallel development.
+- [x] Create the FastAPI application factory and settings model.
+- [x] Add `/health` and `/api/v1` routers.
+- [x] Implement all resource CRUD routes from the contract.
+- [x] Implement `/users/me` and personalized read routes.
+- [x] Implement room availability/booking and event registration routes.
+- [x] Convert Pydantic and service errors to the standard error envelope.
+- [x] Configure local CORS for the React development origin.
+- [x] Generate and inspect OpenAPI output.
+- [x] Add API integration tests using an isolated temporary SQLite database.
+- [x] Provide contract-matching mock fixtures for frontend parallel development.
 
 ### Exit criteria
 
-- [ ] Every documented endpoint exists and returns the documented shape.
-- [ ] OpenAPI references the intended request and response models.
-- [ ] Frontend mock fixtures and real API responses are interchangeable.
+- [x] Every documented endpoint exists and returns the documented shape.
+- [x] OpenAPI references the intended request and response models.
+- [x] Frontend mock fixtures and real API responses are interchangeable.
 
 ---
 
 ## M6 — AI agent and real tool calling
 
-Status: **Contract complete; implementation not started**
+Status: **Complete**
 
 ### Tasks
 
-- [ ] Select and configure one tool-calling LLM provider behind a small adapter.
-- [ ] Create the CampusOS system prompt and bounded agent loop.
-- [ ] Implement read tools for personalized schedules, assignments,
+- [x] Select and configure one tool-calling LLM provider behind a small adapter.
+- [x] Create the CampusOS system prompt and bounded agent loop.
+- [x] Implement read tools for personalized schedules, assignments,
   announcements, events, rooms, and availability.
-- [ ] Implement command tools for room booking/cancellation and event
+- [x] Implement command tools for room booking/cancellation and event
   registration/cancellation.
-- [ ] Inject the trusted user and current `Asia/Dhaka` time server-side.
-- [ ] Require clarification before mutation when date, time, target, or purpose is
+- [x] Inject the trusted user and current `Asia/Dhaka` time server-side.
+- [x] Require clarification before mutation when date, time, target, or purpose is
   materially ambiguous.
-- [ ] Enforce authorization in services even if the model requests an invalid
+- [x] Enforce authorization in services even if the model requests an invalid
   action.
-- [ ] Return concise tool traces without prompts, secrets, SQL, or personal data.
-- [ ] Add provider timeout, bounded retry, and user-safe failure behavior.
-- [ ] Test every published sample query and adversarial variants.
+- [x] Return concise tool traces without prompts, secrets, SQL, or personal data.
+- [x] Add provider timeout, bounded retry, and user-safe failure behavior.
+- [x] Test every published sample query and adversarial variants.
 
 ### Required behavioral tests
 
-- [ ] “When is my next class?” accounts for weekday, current time, and active
+- [x] “When is my next class?” accounts for weekday, current time, and active
   announcements that clearly override a class.
-- [ ] “Due this week” uses explicit week boundaries in `Asia/Dhaka`.
-- [ ] “I am free until 2” combines schedule and event data.
-- [ ] Room suggestions satisfy every capacity, equipment, date, and time filter.
-- [ ] Vague booking requests ask a question and perform zero writes.
-- [ ] Unauthorized mutations are refused by the service layer.
-- [ ] A dashboard edit is reflected in the next agent answer.
+- [x] “Due this week” uses explicit week boundaries in `Asia/Dhaka`.
+- [x] “I am free until 2” combines schedule and event data.
+- [x] Room suggestions satisfy every capacity, equipment, date, and time filter.
+- [x] Vague booking requests ask a question and perform zero writes.
+- [x] Unauthorized mutations are refused by the service layer.
+- [x] A dashboard edit is reflected in the next agent answer.
 
 ### Exit criteria
 
-- [ ] All reads and writes occur through real registered tools.
-- [ ] No campus record is copied into the system prompt or hardcoded response.
-- [ ] Tool failure never becomes a falsely reported success.
+- [x] All reads and writes occur through real registered tools.
+- [x] No campus record is copied into the system prompt or hardcoded response.
+- [x] Tool failure never becomes a falsely reported success.
 
 ---
 
@@ -379,7 +379,7 @@ Status: **Partially started**
 - [ ] Add exact `uv` backend installation and run commands.
 - [ ] Add exact frontend installation and run commands.
 - [ ] Add database initialization behavior and troubleshooting notes.
-- [ ] Document the selected LLM and required API key.
+- [x] Document the selected LLM and required API key.
 - [ ] Document example agent questions and supported actions.
 - [ ] Add a one-command or two-command local startup path.
 - [ ] Clone into a clean directory and rehearse setup from the README.
@@ -428,16 +428,20 @@ These may be added as bonuses only after the judged workflow is stable.
 At the time this roadmap was created:
 
 ```text
-14 tests passed
+61 tests passed
 ```
 
 The tests currently cover seed-schema compatibility, strict validation, invalid
 time ranges, empty patches, demo-user enrollment relevance, assignment relevance,
 active announcements, discoverable events, and user-specific event registration.
-They do not yet test persistence, HTTP routes, frontend behavior, or an LLM.
+They now cover persistence migrations, seed imports, restart safety, constraints,
+transaction rollback, CRUD services, personalized reads, availability boundaries,
+idempotency, authorization, event capacity, HTTP routes, OpenAPI exposure, mock
+contracts, error envelopes, local CORS, the bounded agent loop, registered tool
+use, sample queries, ambiguity, live-data visibility, and provider failures. They
+do not yet test frontend behavior or make paid calls to the configured LLM.
 
 ## 8. Immediate next milestone
 
-Proceed with **M3 — SQLite persistence and safe seed import**. Do not begin the
-agent or dashboard by embedding seed JSON directly; that would violate the core
-live-data requirement and create throwaway work.
+Proceed with **M7 — React dashboard and chat experience** against the completed
+backend and agent API.
