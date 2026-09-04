@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-04  
 Target: AI Build Hackathon MVP  
-Status: **contract and relevance foundation complete; runnable application not yet implemented**
+Status: **persistence foundation complete; runnable application not yet implemented**
 
 ## 1. Product objective
 
@@ -182,20 +182,20 @@ claims and per-user assignment progress.
 
 ## M3 — SQLite persistence and safe seed import
 
-Status: **Not started**
+Status: **Complete**
 
 ### Tasks
 
-- [ ] Add SQLAlchemy 2 and Alembic dependencies.
-- [ ] Define normalized database models for users, enrollments, schedules, rooms,
+- [x] Add SQLAlchemy 2 and Alembic dependencies.
+- [x] Define normalized database models for users, enrollments, schedules, rooms,
   bookings, events, registrations, announcements, and assignments.
-- [ ] Add foreign keys, unique constraints, indexes, and cascade behavior.
-- [ ] Store bookings and registrations as tables rather than mutable JSON arrays.
-- [ ] Implement a transaction-scoped database session dependency.
-- [ ] Implement seed import that runs only when the database is empty.
-- [ ] Preserve supplied IDs and generate collision-resistant IDs for new records.
-- [ ] Ensure application restarts never overwrite edited data.
-- [ ] Add migration and seed-import tests.
+- [x] Add foreign keys, unique constraints, indexes, and cascade behavior.
+- [x] Store bookings and registrations as tables rather than mutable JSON arrays.
+- [x] Implement a transaction-scoped database session dependency.
+- [x] Implement seed import that runs only when the database is empty.
+- [x] Preserve supplied IDs and generate collision-resistant IDs for new records.
+- [x] Ensure application restarts never overwrite edited data.
+- [x] Add migration and seed-import tests.
 
 ### Required database protections
 
@@ -208,10 +208,10 @@ Status: **Not started**
 
 ### Exit criteria
 
-- [ ] All seed data imports into a new database.
-- [ ] Restarting with a populated database leaves changes untouched.
-- [ ] CRUD mutations survive process restart.
-- [ ] A failed multi-step write leaves no partial data.
+- [x] All seed data imports into a new database.
+- [x] Restarting with a populated database leaves changes untouched.
+- [x] CRUD mutations survive process restart.
+- [x] A failed multi-step write leaves no partial data.
 
 ---
 
@@ -428,16 +428,17 @@ These may be added as bonuses only after the judged workflow is stable.
 At the time this roadmap was created:
 
 ```text
-14 tests passed
+20 tests passed
 ```
 
 The tests currently cover seed-schema compatibility, strict validation, invalid
 time ranges, empty patches, demo-user enrollment relevance, assignment relevance,
 active announcements, discoverable events, and user-specific event registration.
-They do not yet test persistence, HTTP routes, frontend behavior, or an LLM.
+They now cover persistence migrations, seed imports, restart safety, constraints,
+and transaction rollback. They do not yet test HTTP routes, frontend behavior, or
+an LLM.
 
 ## 8. Immediate next milestone
 
-Proceed with **M3 — SQLite persistence and safe seed import**. Do not begin the
-agent or dashboard by embedding seed JSON directly; that would violate the core
-live-data requirement and create throwaway work.
+Proceed with **M4 — Shared domain and transaction services**. Routes and agent
+tools must use those services rather than defining business rules independently.
