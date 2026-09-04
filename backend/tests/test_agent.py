@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import func, select
 
-from app.agent.provider import ProviderTurn, ToolRequest
+from app.agent.provider import GeminiProvider, ProviderTurn, ToolRequest
 from app.db.models import Booking
 from app.main import create_app
 from app.settings import Settings
@@ -141,3 +141,34 @@ def test_provider_failure_is_safe_and_user_facing(tmp_path: Path):
     assert response.status_code == 503
     assert response.json()["error"]["code"] == "AGENT_UNAVAILABLE"
     assert "secret" not in response.text
+
+
+def test_gemini_adapter_round_trips_native_function_calls():
+    from google.genai import types
+
+    tool_content = types.Content(role="model", parts=[types.Part.from_function_call(name="get_events", args={"on_date":"2026-09-04"})])
+    text_content = types.Content(role="model", parts=[types.Part.from_text(text="One event is available.")])
+    responses = [types.GenerateContentResponse(candidates=[types.Candidate(content=tool_content)]),
+                 types.GenerateContentResponse(candidates=[types.Candidate(content=text_content)])]
+
+    class Models:
+        def __init__(self): self.calls = []
+        def generate_content(self, **kwargs):
+            self.calls.append(kwargs)
+            return responses.pop(0)
+    class Client:
+        def __init__(self): self.models = Models()
+
+    provider = GeminiProvider.__new__(GeminiProvider)
+    provider._types, provider._client, provider._model = types, Client(), "gemini-2.5-flash"
+    provider._histories, provider._call_names = {}, {}
+    definitions = [{"type":"function", "name":"get_events", "description":"Get events",
+                    "parameters":{"type":"object","properties":{"on_date":{"type":"string"}},"required":["on_date"],"additionalProperties":False}}]
+    first = provider.respond(instructions="Use tools", input_items="Events?", tools=definitions)
+    assert first.tool_calls[0].name == "get_events"
+    second = provider.respond(instructions="Use tools", input_items=[{"type":"function_call_output",
+        "call_id":first.tool_calls[0].call_id, "output":json.dumps([{"id":"evt-test"}])}],
+        tools=definitions, previous_response_id=first.response_id)
+    assert second.text == "One event is available."
+    sent_history = provider._client.models.calls[1]["contents"]
+    assert [content.role for content in sent_history[:3]] == ["user", "model", "tool"]

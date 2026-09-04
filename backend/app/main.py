@@ -12,7 +12,7 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from app import api
-from app.agent import AgentOrchestrator, OpenAIResponsesProvider
+from app.agent import AgentOrchestrator, GeminiProvider
 from app.agent.provider import ToolCallingProvider
 from app.db.seed import import_seed_data
 from app.db.session import create_engine_and_session_factory, get_session, session_scope
@@ -63,8 +63,8 @@ def create_app(settings: Settings | None = None, agent_provider: ToolCallingProv
             engine.dispose()
 
     app = FastAPI(title="CampusOS API", version="1.0.0", lifespan=lifespan)
-    if agent_provider is None and settings.openai_api_key:
-        agent_provider = OpenAIResponsesProvider(settings.openai_api_key, settings.openai_model, settings.agent_timeout_seconds)
+    if agent_provider is None and settings.gemini_api_key:
+        agent_provider = GeminiProvider(settings.gemini_api_key, settings.gemini_model, settings.agent_timeout_seconds)
     app.state.agent = (AgentOrchestrator(agent_provider, settings.demo_user_id, settings.app_timezone,
                                          settings.agent_max_rounds) if agent_provider else None)
     app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, allow_credentials=True,

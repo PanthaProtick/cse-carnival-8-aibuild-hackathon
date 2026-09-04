@@ -1,4 +1,4 @@
 from .orchestrator import AgentOrchestrator
-from .provider import OpenAIResponsesProvider
+from .provider import GeminiProvider
 
-__all__ = ["AgentOrchestrator", "OpenAIResponsesProvider"]
+__all__ = ["AgentOrchestrator", "GeminiProvider"]

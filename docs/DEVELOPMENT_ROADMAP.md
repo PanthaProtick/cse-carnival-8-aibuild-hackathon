@@ -379,7 +379,7 @@ Status: **Partially started**
 - [ ] Add exact `uv` backend installation and run commands.
 - [ ] Add exact frontend installation and run commands.
 - [ ] Add database initialization behavior and troubleshooting notes.
-- [ ] Document the selected LLM and required API key.
+- [x] Document the selected LLM and required API key.
 - [ ] Document example agent questions and supported actions.
 - [ ] Add a one-command or two-command local startup path.
 - [ ] Clone into a clean directory and rehearse setup from the README.
@@ -428,7 +428,7 @@ These may be added as bonuses only after the judged workflow is stable.
 At the time this roadmap was created:
 
 ```text
-60 tests passed
+61 tests passed
 ```
 
 The tests currently cover seed-schema compatibility, strict validation, invalid

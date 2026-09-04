@@ -147,6 +147,20 @@ def delete_resource(session: Session, resource: str, resource_id: str) -> Delete
     return DeleteResponse(id=resource_id)
 
 
+def list_announcements(session: Session, priority: str | None = None, active_on: date | None = None,
+                       posted_by: str | None = None) -> list[AnnouncementResponse]:
+    items = list_resources(session, "announcement", priority=priority, posted_by=posted_by)
+    return [item for item in items if active_on is None or item.date <= active_on <= item.expires]
+
+
+def list_assignments(session: Session, course: str | None = None, status: str | None = None,
+                     due_from: date | None = None, due_to: date | None = None) -> list[AssignmentResponse]:
+    items = list_resources(session, "assignment", course=course, status=status)
+    if due_from is not None: items = [item for item in items if item.deadline >= due_from]
+    if due_to is not None: items = [item for item in items if item.deadline <= due_to]
+    return items
+
+
 def _load_room(session: Session, room_id: str) -> Room:
     room = session.scalar(select(Room).options(selectinload(Room.equipment), selectinload(Room.bookings)).where(Room.id == room_id))
     if room is None:
@@ -307,6 +321,6 @@ def cancel_registration(session: Session, event_id: str, user_id: str, student_i
 
 
 def my_schedules(session: Session, user_id: str): return relevant_schedules(get_current_user(session, user_id), list_resources(session, "schedule"))
-def my_assignments(session: Session, user_id: str): return relevant_assignments(get_current_user(session, user_id), list_resources(session, "assignment"))
-def my_announcements(session: Session, on_date: date): return relevant_announcements(list_resources(session, "announcement"), on_date)
+def my_assignments(session: Session, user_id: str): return relevant_assignments(get_current_user(session, user_id), list_assignments(session))
+def my_announcements(session: Session, on_date: date): return relevant_announcements(list_announcements(session), on_date)
 def my_events(session: Session, on_date: date): return relevant_events(list_events(session), on_date)

@@ -58,7 +58,7 @@ def agent_messages(request: Request, db: Db, payload: AgentMessageRequest) -> Ag
     from app.services.errors import AgentUnavailableError
     orchestrator = request.app.state.agent
     if orchestrator is None:
-        raise AgentUnavailableError("The agent provider is not configured. Set OPENAI_API_KEY.")
+        raise AgentUnavailableError("The agent provider is not configured. Set GEMINI_API_KEY.")
     return orchestrator.run(db, payload.message, payload.conversation_id)
 
 
@@ -122,8 +122,7 @@ def remove_registration(db: Db, item_id: str, student_id: str): return domain.ca
 
 @router.get("/announcements", response_model=AnnouncementListResponse)
 def announcements(db: Db, priority: str | None = None, active_on: date | None = None, posted_by: str | None = None):
-    items = domain.list_resources(db, "announcement", priority=priority, posted_by=posted_by)
-    if active_on: items = [item for item in items if item.date <= active_on <= item.expires]
+    items = domain.list_announcements(db, priority, active_on, posted_by)
     return _list(items, AnnouncementListResponse)
 @router.get("/announcements/{item_id}", response_model=AnnouncementResponse)
 def announcement(db: Db, item_id: str): return domain.get_resource(db, "announcement", item_id)
@@ -137,9 +136,7 @@ def remove_announcement(db: Db, item_id: str): return domain.delete_resource(db,
 
 @router.get("/assignments", response_model=AssignmentListResponse)
 def assignments(db: Db, course: str | None = None, status_: str | None = Query(default=None, alias="status"), due_from: date | None = None, due_to: date | None = None):
-    items = domain.list_resources(db, "assignment", course=course, status=status_)
-    if due_from: items = [item for item in items if item.deadline >= due_from]
-    if due_to: items = [item for item in items if item.deadline <= due_to]
+    items = domain.list_assignments(db, course, status_, due_from, due_to)
     return _list(items, AssignmentListResponse)
 @router.get("/assignments/{item_id}", response_model=AssignmentResponse)
 def assignment(db: Db, item_id: str): return domain.get_resource(db, "assignment", item_id)
