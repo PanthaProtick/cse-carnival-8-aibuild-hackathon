@@ -195,7 +195,14 @@ def test_failed_agent_turn_rolls_back_earlier_mutation(tmp_path: Path):
 def test_gemini_adapter_round_trips_native_function_calls():
     from google.genai import types
 
-    tool_content = types.Content(role="model", parts=[types.Part.from_function_call(name="get_events", args={"on_date":"2026-09-04"})])
+    tool_content = types.Content(
+        role="model",
+        parts=[types.Part(function_call=types.FunctionCall(
+            id="call-events-1",
+            name="get_events",
+            args={"on_date":"2026-09-04"},
+        ))],
+    )
     text_content = types.Content(role="model", parts=[types.Part.from_text(text="One event is available.")])
     responses = [types.GenerateContentResponse(candidates=[types.Candidate(content=tool_content)]),
                  types.GenerateContentResponse(candidates=[types.Candidate(content=text_content)])]
@@ -209,7 +216,7 @@ def test_gemini_adapter_round_trips_native_function_calls():
         def __init__(self): self.models = Models()
 
     provider = GeminiProvider.__new__(GeminiProvider)
-    provider._types, provider._client, provider._model = types, Client(), "gemini-2.5-flash"
+    provider._types, provider._client, provider._model = types, Client(), "gemini-3.6-flash"
     provider._histories, provider._call_names = {}, {}
     definitions = [{"type":"function", "name":"get_events", "description":"Get events",
                     "parameters":{"type":"object","properties":{"on_date":{"type":"string"}},"required":["on_date"],"additionalProperties":False}}]
@@ -220,4 +227,7 @@ def test_gemini_adapter_round_trips_native_function_calls():
         tools=definitions, previous_response_id=first.response_id)
     assert second.text == "One event is available."
     sent_history = provider._client.models.calls[1]["contents"]
-    assert [content.role for content in sent_history[:3]] == ["user", "model", "tool"]
+    assert [content.role for content in sent_history[:3]] == ["user", "model", "user"]
+    function_response = sent_history[2].parts[0].function_response
+    assert function_response.id == first.tool_calls[0].call_id
+    assert function_response.name == "get_events"

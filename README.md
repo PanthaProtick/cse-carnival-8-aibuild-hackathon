@@ -115,7 +115,7 @@ CampusOS uses Gemini native function calling through Google's official
 
 ```env
 GEMINI_API_KEY=your_key_here
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.6-flash
 ```
 
 The API key remains server-side. The model can access campus data only through

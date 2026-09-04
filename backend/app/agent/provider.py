@@ -48,8 +48,18 @@ class GeminiProvider:
             for item in input_items:
                 call_id = item["call_id"]
                 payload = json.loads(item["output"])
-                parts.append(types.Part.from_function_response(name=names[call_id], response={"result": payload}))
-            history.append(types.Content(role="tool", parts=parts))
+                parts.append(
+                    types.Part(
+                        function_response=types.FunctionResponse(
+                            id=call_id,
+                            name=names[call_id],
+                            response={"result": payload},
+                        )
+                    )
+                )
+            # Gemini 3.x expects function responses as user content with the
+            # original function-call ID so it can match parallel tool results.
+            history.append(types.Content(role="user", parts=parts))
 
         declarations = [types.FunctionDeclaration(name=item["name"], description=item["description"],
                                                     parameters_json_schema=item["parameters"]) for item in tools]
