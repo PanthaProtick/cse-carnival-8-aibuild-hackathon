@@ -311,22 +311,22 @@ Status: **Contract complete; implementation not started**
 
 ## M7 — React dashboard and chat experience
 
-Status: **Not started**
+Status: **Complete against the persistent mock API; ready for FastAPI integration**
 
 ### Tasks
 
-- [ ] Scaffold React + TypeScript with Vite.
-- [ ] Add a typed API client derived from or checked against OpenAPI.
-- [ ] Add TanStack Query for server state and mutation invalidation.
-- [ ] Build navigation and responsive application shell.
-- [ ] Build clear views for all five required systems.
-- [ ] Implement add, edit, and delete interactions for each system.
-- [ ] Implement room booking/cancellation and event registration/cancellation.
-- [ ] Build the agent chat interface with loading, clarification, refusal, and
+- [x] Scaffold React + TypeScript with Vite.
+- [x] Add a typed API client checked against the documented v1 contract.
+- [x] Add TanStack Query for server state and mutation invalidation.
+- [x] Build navigation and responsive application shell.
+- [x] Build clear views for all five required systems.
+- [x] Implement add, edit, and delete interactions for each system.
+- [x] Implement room booking/cancellation and event registration/cancellation.
+- [x] Build the agent chat interface with loading, clarification, refusal, and
   failure states.
-- [ ] Display validation and conflict errors without losing form input.
-- [ ] Add empty, loading, and retry states.
-- [ ] Verify keyboard access, labels, focus behavior, and mobile layout.
+- [x] Display validation and conflict errors without losing form input.
+- [x] Add empty, loading, and retry states.
+- [x] Verify keyboard access, labels, focus behavior, and mobile layout.
 
 ### State-management rule
 
@@ -336,9 +336,9 @@ queries so the UI reflects committed backend state immediately.
 
 ### Exit criteria
 
-- [ ] All five systems are visible and usable.
-- [ ] Every required CRUD action updates immediately and survives reload.
-- [ ] Agent chat is usable without inspecting developer tools.
+- [x] All five systems are visible and usable.
+- [x] Every required CRUD action updates immediately and survives reload in the mock environment.
+- [x] Agent chat is usable without inspecting developer tools.
 
 ---
 
