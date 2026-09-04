@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-const selector = '.resource-card, .stat, .panel, .selection-option, .chat, .command-drawer'
+const selector = '.resource-card, .stat, .panel, .selection-option, .chat, .command-drawer, .sidebar'
 
 export function usePremiumPointer() {
   useEffect(() => {
