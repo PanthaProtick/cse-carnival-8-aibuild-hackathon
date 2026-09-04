@@ -33,3 +33,7 @@ class AlreadyRegisteredError(ConflictError):
 
 class NotRegisteredError(ServiceError):
     code = "NOT_REGISTERED"
+
+
+class AgentUnavailableError(ServiceError):
+    code = "AGENT_UNAVAILABLE"

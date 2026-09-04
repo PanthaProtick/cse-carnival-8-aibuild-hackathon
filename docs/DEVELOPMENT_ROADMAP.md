@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-04  
 Target: AI Build Hackathon MVP  
-Status: **persistence foundation complete; runnable application not yet implemented**
+Status: **backend API and AI agent complete; frontend not yet implemented**
 
 ## 1. Product objective
 
@@ -271,41 +271,41 @@ Status: **Complete**
 
 ## M6 — AI agent and real tool calling
 
-Status: **Contract complete; implementation not started**
+Status: **Complete**
 
 ### Tasks
 
-- [ ] Select and configure one tool-calling LLM provider behind a small adapter.
-- [ ] Create the CampusOS system prompt and bounded agent loop.
-- [ ] Implement read tools for personalized schedules, assignments,
+- [x] Select and configure one tool-calling LLM provider behind a small adapter.
+- [x] Create the CampusOS system prompt and bounded agent loop.
+- [x] Implement read tools for personalized schedules, assignments,
   announcements, events, rooms, and availability.
-- [ ] Implement command tools for room booking/cancellation and event
+- [x] Implement command tools for room booking/cancellation and event
   registration/cancellation.
-- [ ] Inject the trusted user and current `Asia/Dhaka` time server-side.
-- [ ] Require clarification before mutation when date, time, target, or purpose is
+- [x] Inject the trusted user and current `Asia/Dhaka` time server-side.
+- [x] Require clarification before mutation when date, time, target, or purpose is
   materially ambiguous.
-- [ ] Enforce authorization in services even if the model requests an invalid
+- [x] Enforce authorization in services even if the model requests an invalid
   action.
-- [ ] Return concise tool traces without prompts, secrets, SQL, or personal data.
-- [ ] Add provider timeout, bounded retry, and user-safe failure behavior.
-- [ ] Test every published sample query and adversarial variants.
+- [x] Return concise tool traces without prompts, secrets, SQL, or personal data.
+- [x] Add provider timeout, bounded retry, and user-safe failure behavior.
+- [x] Test every published sample query and adversarial variants.
 
 ### Required behavioral tests
 
-- [ ] “When is my next class?” accounts for weekday, current time, and active
+- [x] “When is my next class?” accounts for weekday, current time, and active
   announcements that clearly override a class.
-- [ ] “Due this week” uses explicit week boundaries in `Asia/Dhaka`.
-- [ ] “I am free until 2” combines schedule and event data.
-- [ ] Room suggestions satisfy every capacity, equipment, date, and time filter.
-- [ ] Vague booking requests ask a question and perform zero writes.
-- [ ] Unauthorized mutations are refused by the service layer.
-- [ ] A dashboard edit is reflected in the next agent answer.
+- [x] “Due this week” uses explicit week boundaries in `Asia/Dhaka`.
+- [x] “I am free until 2” combines schedule and event data.
+- [x] Room suggestions satisfy every capacity, equipment, date, and time filter.
+- [x] Vague booking requests ask a question and perform zero writes.
+- [x] Unauthorized mutations are refused by the service layer.
+- [x] A dashboard edit is reflected in the next agent answer.
 
 ### Exit criteria
 
-- [ ] All reads and writes occur through real registered tools.
-- [ ] No campus record is copied into the system prompt or hardcoded response.
-- [ ] Tool failure never becomes a falsely reported success.
+- [x] All reads and writes occur through real registered tools.
+- [x] No campus record is copied into the system prompt or hardcoded response.
+- [x] Tool failure never becomes a falsely reported success.
 
 ---
 
@@ -428,7 +428,7 @@ These may be added as bonuses only after the judged workflow is stable.
 At the time this roadmap was created:
 
 ```text
-46 tests passed
+60 tests passed
 ```
 
 The tests currently cover seed-schema compatibility, strict validation, invalid
@@ -437,10 +437,11 @@ active announcements, discoverable events, and user-specific event registration.
 They now cover persistence migrations, seed imports, restart safety, constraints,
 transaction rollback, CRUD services, personalized reads, availability boundaries,
 idempotency, authorization, event capacity, HTTP routes, OpenAPI exposure, mock
-contracts, error envelopes, and local CORS. They do not yet test frontend behavior
-or an LLM.
+contracts, error envelopes, local CORS, the bounded agent loop, registered tool
+use, sample queries, ambiguity, live-data visibility, and provider failures. They
+do not yet test frontend behavior or make paid calls to the configured LLM.
 
 ## 8. Immediate next milestone
 
-Proceed with **M6 — AI agent and real tool calling** and **M7 — React dashboard
-and chat experience**, which may now be developed in parallel against the same API.
+Proceed with **M7 — React dashboard and chat experience** against the completed
+backend and agent API.

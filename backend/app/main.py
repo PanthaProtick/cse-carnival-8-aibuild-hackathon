@@ -12,6 +12,8 @@ from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from app import api
+from app.agent import AgentOrchestrator, OpenAIResponsesProvider
+from app.agent.provider import ToolCallingProvider
 from app.db.seed import import_seed_data
 from app.db.session import create_engine_and_session_factory, get_session, session_scope
 from app.services.errors import ServiceError
@@ -42,7 +44,7 @@ def _run_migrations(database_url: str) -> None:
     command.upgrade(config, "head")
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(settings: Settings | None = None, agent_provider: ToolCallingProvider | None = None) -> FastAPI:
     settings = settings or Settings()
 
     @asynccontextmanager
@@ -61,6 +63,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             engine.dispose()
 
     app = FastAPI(title="CampusOS API", version="1.0.0", lifespan=lifespan)
+    if agent_provider is None and settings.openai_api_key:
+        agent_provider = OpenAIResponsesProvider(settings.openai_api_key, settings.openai_model, settings.agent_timeout_seconds)
+    app.state.agent = (AgentOrchestrator(agent_provider, settings.demo_user_id, settings.app_timezone,
+                                         settings.agent_max_rounds) if agent_provider else None)
     app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, allow_credentials=True,
                        allow_methods=["*"], allow_headers=["*"])
     api.router.demo_user_id = settings.demo_user_id

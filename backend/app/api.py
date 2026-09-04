@@ -2,7 +2,7 @@ from datetime import date, datetime
 from zoneinfo import ZoneInfo
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Header, Query, status
+from fastapi import APIRouter, Depends, Header, Query, Request, status
 from sqlalchemy.orm import Session
 
 from app.schemas import *
@@ -54,11 +54,12 @@ def user_events(db: Db, on_date: date | None = None):
 
 
 @router.post("/agent/messages", responses={503: {"model": ErrorResponse}})
-def agent_messages(_payload: AgentMessageRequest):
-    from app.services.errors import ServiceError
-    error = ServiceError("The agent provider is not configured yet")
-    error.code = "AGENT_UNAVAILABLE"
-    raise error
+def agent_messages(request: Request, db: Db, payload: AgentMessageRequest) -> AgentMessageResponse:
+    from app.services.errors import AgentUnavailableError
+    orchestrator = request.app.state.agent
+    if orchestrator is None:
+        raise AgentUnavailableError("The agent provider is not configured. Set OPENAI_API_KEY.")
+    return orchestrator.run(db, payload.message, payload.conversation_id)
 
 
 @router.get("/schedules", response_model=ScheduleListResponse)
