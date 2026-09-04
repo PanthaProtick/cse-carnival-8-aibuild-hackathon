@@ -5,11 +5,11 @@ from threading import Lock
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 
-from sqlalchemy.orm import Session
-
 from app.schemas.agent import AgentMessageResponse, AgentStatus, ToolCallStatus, ToolCallTrace
-from app.services.errors import AgentUnavailableError, ForbiddenError, ServiceError
+from app.schemas.common import ErrorCode
+from app.services.errors import AgentUnavailableError
 
+from .gateway import AgentGatewayError, CampusDataGateway
 from .provider import ToolCallingProvider
 from .tools import CampusTools, tool_definitions
 
@@ -34,12 +34,12 @@ SAFE_TRACE_ARGUMENTS = {"room_id", "booking_id", "event_id", "date", "start_time
 
 
 class AgentOrchestrator:
-    def __init__(self, provider: ToolCallingProvider, user_id: str, timezone: str = "Asia/Dhaka", max_rounds: int = 6) -> None:
-        self.provider, self.user_id, self.timezone, self.max_rounds = provider, user_id, timezone, max_rounds
+    def __init__(self, provider: ToolCallingProvider, timezone: str = "Asia/Dhaka", max_rounds: int = 6) -> None:
+        self.provider, self.timezone, self.max_rounds = provider, timezone, max_rounds
         self._conversations: dict[str, str] = {}
         self._lock = Lock()
 
-    def run(self, session: Session, message: str, conversation_id: str | None = None,
+    def run(self, gateway: CampusDataGateway, message: str, conversation_id: str | None = None,
             now: datetime | None = None) -> AgentMessageResponse:
         conversation_id = conversation_id or f"conv-{uuid4().hex}"
         clarification = self._preflight_clarification(message)
@@ -52,7 +52,7 @@ class AgentOrchestrator:
             previous_id = self._conversations.get(conversation_id)
         input_items = message
         traces: list[ToolCallTrace] = []
-        tools = CampusTools(session, self.user_id)
+        tools = CampusTools(gateway)
         had_failure = False
         refusal = False
         try:
@@ -65,7 +65,6 @@ class AgentOrchestrator:
                         raise RuntimeError("Provider returned neither text nor tool calls")
                     with self._lock: self._conversations[conversation_id] = turn.response_id
                     status = AgentStatus.REFUSED if refusal else (AgentStatus.FAILED if had_failure else AgentStatus.COMPLETED)
-                    if had_failure: session.rollback()
                     return AgentMessageResponse(conversation_id=conversation_id, reply=turn.text, status=status, tool_calls=traces)
                 outputs = []
                 for call in turn.tool_calls:
@@ -74,12 +73,12 @@ class AgentOrchestrator:
                         output, summary = tools.execute(call.name, call.arguments, call.call_id)
                         traces.append(ToolCallTrace(name=call.name, status=ToolCallStatus.SUCCEEDED,
                                                     arguments=safe_args or None, result_summary=summary))
-                    except ServiceError as exc:
+                    except AgentGatewayError as exc:
                         had_failure = True
-                        refusal = refusal or isinstance(exc, ForbiddenError)
-                        output = json.dumps({"ok":False, "error":{"code":exc.code, "message":exc.message}})
+                        refusal = refusal or exc.code is ErrorCode.FORBIDDEN
+                        output = json.dumps({"ok":False, "error":{"code":exc.code.value, "message":exc.message}})
                         traces.append(ToolCallTrace(name=call.name, status=ToolCallStatus.FAILED,
-                                                    arguments=safe_args or None, result_summary=f"Failed: {exc.code}"))
+                                                    arguments=safe_args or None, result_summary=f"Failed: {exc.code.value}"))
                     except Exception:
                         had_failure = True
                         output = json.dumps({"ok":False, "error":{"code":"VALIDATION_ERROR", "message":"Invalid tool arguments"}})
@@ -87,11 +86,9 @@ class AgentOrchestrator:
                                                     arguments=safe_args or None, result_summary="Failed: VALIDATION_ERROR"))
                     outputs.append({"type":"function_call_output", "call_id":call.call_id, "output":output})
                 input_items = outputs
-            session.rollback()
             return AgentMessageResponse(conversation_id=conversation_id, reply="I couldn't complete that request within the tool-call limit.",
                                         status=AgentStatus.FAILED, tool_calls=traces)
         except Exception as exc:
-            session.rollback()
             if isinstance(exc, AgentUnavailableError): raise
             raise AgentUnavailableError("The campus assistant is temporarily unavailable. Please try again.") from exc
 

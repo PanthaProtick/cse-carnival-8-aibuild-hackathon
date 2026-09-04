@@ -1,4 +1,5 @@
 import json
+import inspect
 from datetime import date
 from pathlib import Path
 
@@ -7,6 +8,7 @@ from alembic import command
 from alembic.config import Config
 
 from app.agent import CampusDataGateway, FakeCampusDataGateway, ServiceCampusDataGateway
+from app.agent import tools as tools_module
 from app.agent.gateway import (
     AgentGatewayError,
     BookRoomCommand,
@@ -160,3 +162,15 @@ def test_gateways_normalize_expected_service_failures(request, gateway_fixture):
             )
         )
     assert error.value.code is ErrorCode.ALREADY_REGISTERED
+
+
+def test_agent_tools_depend_on_gateway_not_database_or_domain_services(fake_gateway):
+    source = inspect.getsource(tools_module)
+    assert "sqlalchemy" not in source
+    assert "app.services" not in source
+
+    output, summary = tools_module.CampusTools(fake_gateway).execute(
+        "get_my_schedules", {"day": "Wednesday"}, "read-001"
+    )
+    assert len(json.loads(output)) == 5
+    assert summary == "Returned 5 result(s)"

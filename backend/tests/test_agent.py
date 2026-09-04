@@ -143,6 +143,55 @@ def test_provider_failure_is_safe_and_user_facing(tmp_path: Path):
     assert "secret" not in response.text
 
 
+class PartialFailureProvider:
+    def respond(self, *, input_items, **_kwargs):
+        if isinstance(input_items, str):
+            return ProviderTurn(
+                "partial-1",
+                tool_calls=[
+                    ToolRequest(
+                        "book-then-fail",
+                        "book_room",
+                        {
+                            "room_id": "room-002",
+                            "date": "2026-09-05",
+                            "start_time": "15:00",
+                            "end_time": "17:00",
+                            "purpose": "Group study",
+                        },
+                    ),
+                    ToolRequest("unknown", "unknown_tool", {}),
+                ],
+            )
+        return ProviderTurn("partial-2", text="One requested action failed.")
+
+
+def test_failed_agent_turn_rolls_back_earlier_mutation(tmp_path: Path):
+    app = create_app(
+        Settings(database_url=f"sqlite:///{(tmp_path / 'rollback.db').as_posix()}"),
+        PartialFailureProvider(),
+    )
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/agent/messages",
+            json={
+                "message": (
+                    "Book Room 7A02 tomorrow from 3 PM to 5 PM for group study."
+                )
+            },
+        )
+        assert response.json()["status"] == "failed"
+        with app.state.session_factory() as session:
+            assert (
+                session.scalar(
+                    select(func.count())
+                    .select_from(Booking)
+                    .where(Booking.room_id == "room-002")
+                )
+                == 0
+            )
+
+
 def test_gemini_adapter_round_trips_native_function_calls():
     from google.genai import types
 
