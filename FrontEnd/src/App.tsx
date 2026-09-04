@@ -1,4 +1,4 @@
-import { Bell, Bot, Building2, CalendarDays, ChevronLeft, ChevronRight, ClipboardCheck, LayoutDashboard, Menu, X } from 'lucide-react'
+import { Bell, Bot, Building2, CalendarDays, ClipboardCheck, LayoutDashboard, Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -23,7 +23,7 @@ export function App() {
   return <div className={collapsed ? 'app-shell nav-collapsed' : 'app-shell'}>
     <aside className={open ? 'sidebar open' : 'sidebar'}>
       <div className="brand"><span className="brand-mark">C</span><div className="brand-copy"><strong>CampusOS</strong><small>AUST • CSE</small></div><button className="icon-button sidebar-close" onClick={() => setOpen(false)} aria-label="Close navigation"><X /></button></div>
-      <button className="nav-collapse" onClick={toggleCollapsed} aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'} title={collapsed ? 'Expand navigation' : 'Collapse navigation'}>{collapsed ? <ChevronRight/> : <ChevronLeft/>}</button>
+      <button className="nav-collapse" onClick={toggleCollapsed} aria-label={collapsed ? 'Expand navigation' : 'Collapse navigation'} title={collapsed ? 'Expand navigation' : 'Collapse navigation'}><span>{collapsed ? <PanelLeftOpen/> : <PanelLeftClose/>}</span><small>Navigation</small></button>
       <nav aria-label="Primary navigation">{links.map(([to, Icon, label], index) => <NavLink key={to} to={to} end={to === '/'} onClick={() => setOpen(false)} title={collapsed ? label : undefined} style={{'--nav-index':index} as React.CSSProperties}><span className="nav-icon"><Icon size={19}/></span><span className="nav-label">{label}</span><i className="nav-spark"/></NavLink>)}</nav>
       <div className="profile"><span>{user?.name.split(' ').map(x => x[0]).slice(0,2).join('') ?? 'SH'}</span><div className="profile-copy"><strong>{user?.name ?? 'Loading…'}</strong><small>{user?.student_id ?? 'Campus account'}</small></div></div>
     </aside>
