@@ -217,30 +217,30 @@ Status: **Complete**
 
 ## M4 — Shared domain and transaction services
 
-Status: **Relevance functions complete; persistence-backed services not started**
+Status: **Complete**
 
 ### Tasks
 
 - [x] Implement pure user-relevance functions.
-- [ ] Implement CRUD services for all five systems.
-- [ ] Implement current-user lookup from `DEMO_USER_ID`.
-- [ ] Implement room availability across both dated bookings and recurring
+- [x] Implement CRUD services for all five systems.
+- [x] Implement current-user lookup from `DEMO_USER_ID`.
+- [x] Implement room availability across both dated bookings and recurring
   schedules.
-- [ ] Use half-open intervals `[start, end)` so back-to-back bookings are valid.
-- [ ] Recheck room availability and insert the booking in one transaction.
-- [ ] Implement idempotency-key storage for mutation retries.
-- [ ] Register for an event transactionally with duplicate and capacity checks.
-- [ ] Cancel only the current user's bookings and registrations unless admin.
-- [ ] Implement personalized “my schedule,” “my assignments,” and relevant-event
+- [x] Use half-open intervals `[start, end)` so back-to-back bookings are valid.
+- [x] Recheck room availability and insert the booking in one transaction.
+- [x] Implement idempotency-key storage for mutation retries.
+- [x] Register for an event transactionally with duplicate and capacity checks.
+- [x] Cancel only the current user's bookings and registrations unless admin.
+- [x] Implement personalized “my schedule,” “my assignments,” and relevant-event
   queries.
-- [ ] Add unit tests for collision boundaries, duplicates, full events, missing
+- [x] Add unit tests for collision boundaries, duplicates, full events, missing
   records, and unauthorized actions.
 
 ### Exit criteria
 
-- [ ] Routes and agent tools can use the same service functions.
-- [ ] No business rule exists only in a route, React component, prompt, or tool.
-- [ ] Concurrent/retried actions do not create obvious duplicate mutations.
+- [x] Routes and agent tools can use the same service functions.
+- [x] No business rule exists only in a route, React component, prompt, or tool.
+- [x] Concurrent/retried actions do not create obvious duplicate mutations.
 
 ---
 
@@ -428,17 +428,18 @@ These may be added as bonuses only after the judged workflow is stable.
 At the time this roadmap was created:
 
 ```text
-20 tests passed
+29 tests passed
 ```
 
 The tests currently cover seed-schema compatibility, strict validation, invalid
 time ranges, empty patches, demo-user enrollment relevance, assignment relevance,
 active announcements, discoverable events, and user-specific event registration.
 They now cover persistence migrations, seed imports, restart safety, constraints,
-and transaction rollback. They do not yet test HTTP routes, frontend behavior, or
-an LLM.
+transaction rollback, CRUD services, personalized reads, availability boundaries,
+idempotency, authorization, and event capacity. They do not yet test HTTP routes,
+frontend behavior, or an LLM.
 
 ## 8. Immediate next milestone
 
-Proceed with **M4 — Shared domain and transaction services**. Routes and agent
-tools must use those services rather than defining business rules independently.
+Proceed with **M5 — FastAPI application and mock boundary**. Routes must remain
+thin adapters over the completed shared service layer.

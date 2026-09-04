@@ -142,3 +142,12 @@ class Assignment(Base):
         CheckConstraint("deadline >= assigned_date", name="valid_deadline"),
         CheckConstraint("marks >= 0", name="nonnegative_marks"),
     )
+
+
+class IdempotencyRecord(Base):
+    __tablename__ = "idempotency_records"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    operation: Mapped[str] = mapped_column(String(100))
+    key: Mapped[str] = mapped_column(String(200))
+    resource_id: Mapped[str] = mapped_column(String(64))
+    __table_args__ = (UniqueConstraint("operation", "key", name="uq_idempotency_operation_key"),)

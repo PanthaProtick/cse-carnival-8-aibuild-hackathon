@@ -15,6 +15,12 @@ def create_engine_and_session_factory(database_url: str) -> tuple[Engine, sessio
             cursor.execute("PRAGMA foreign_keys=ON")
             cursor.close()
 
+        @event.listens_for(engine, "begin")
+        def begin_immediate(connection) -> None:
+            # Serialize writers before a service checks state, closing the usual
+            # SQLite check-then-insert race for bookings and registrations.
+            connection.exec_driver_sql("BEGIN IMMEDIATE")
+
     return engine, sessionmaker(bind=engine, expire_on_commit=False)
 
 
