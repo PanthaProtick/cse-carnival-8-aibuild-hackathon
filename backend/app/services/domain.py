@@ -154,8 +154,15 @@ def _load_room(session: Session, room_id: str) -> Room:
     return room
 
 
-def list_rooms(session: Session) -> list[RoomResponse]:
-    return [_room_response(r) for r in session.scalars(select(Room).options(selectinload(Room.equipment), selectinload(Room.bookings)).order_by(Room.room_number)).all()]
+def list_rooms(session: Session, room_type: str | None = None, status: str | None = None,
+               min_capacity: int | None = None, equipment: list[str] | None = None) -> list[RoomResponse]:
+    query = select(Room).options(selectinload(Room.equipment), selectinload(Room.bookings))
+    if room_type: query = query.where(Room.type == room_type)
+    if status: query = query.where(Room.status == status)
+    if min_capacity is not None: query = query.where(Room.capacity >= min_capacity)
+    required = {item.casefold() for item in equipment or []}
+    rooms = session.scalars(query.order_by(Room.room_number)).all()
+    return [_room_response(r) for r in rooms if required.issubset({e.name.casefold() for e in r.equipment})]
 
 
 def get_room(session: Session, room_id: str) -> RoomResponse:
@@ -177,7 +184,11 @@ def update_room(session: Session, room_id: str, patch: RoomUpdate) -> RoomRespon
     for field in ("room_number", "capacity", "floor"):
         setattr(room, field, getattr(data, field))
     room.type, room.status = data.type.value, data.status.value
-    room.equipment = [RoomEquipment(name=e) for e in data.equipment]
+    if "equipment" in patch.model_fields_set:
+        for existing in list(room.equipment):
+            session.delete(existing)
+        session.flush()
+        room.equipment = [RoomEquipment(name=e) for e in data.equipment]
     session.flush(); return _room_response(room)
 
 
@@ -191,8 +202,14 @@ def _load_event(session: Session, event_id: str) -> Event:
     return event
 
 
-def list_events(session: Session) -> list[EventResponse]:
-    return [_event_response(e) for e in session.scalars(select(Event).options(selectinload(Event.registrations)).order_by(Event.date, Event.start_time, Event.id)).all()]
+def list_events(session: Session, date_from: date | None = None, date_to: date | None = None,
+                status: str | None = None, venue: str | None = None) -> list[EventResponse]:
+    query = select(Event).options(selectinload(Event.registrations))
+    if date_from: query = query.where(Event.end_date >= date_from)
+    if date_to: query = query.where(Event.date <= date_to)
+    if status: query = query.where(Event.status == status)
+    if venue: query = query.where(Event.venue == venue)
+    return [_event_response(e) for e in session.scalars(query.order_by(Event.date, Event.start_time, Event.id)).all()]
 
 
 def get_event(session: Session, event_id: str) -> EventResponse:

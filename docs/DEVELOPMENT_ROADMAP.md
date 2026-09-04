@@ -246,26 +246,26 @@ Status: **Complete**
 
 ## M5 — FastAPI application and mock boundary
 
-Status: **Not started**
+Status: **Complete**
 
 ### Tasks
 
-- [ ] Create the FastAPI application factory and settings model.
-- [ ] Add `/health` and `/api/v1` routers.
-- [ ] Implement all resource CRUD routes from the contract.
-- [ ] Implement `/users/me` and personalized read routes.
-- [ ] Implement room availability/booking and event registration routes.
-- [ ] Convert Pydantic and service errors to the standard error envelope.
-- [ ] Configure local CORS for the React development origin.
-- [ ] Generate and inspect OpenAPI output.
-- [ ] Add API integration tests using an isolated temporary SQLite database.
-- [ ] Provide contract-matching mock fixtures for frontend parallel development.
+- [x] Create the FastAPI application factory and settings model.
+- [x] Add `/health` and `/api/v1` routers.
+- [x] Implement all resource CRUD routes from the contract.
+- [x] Implement `/users/me` and personalized read routes.
+- [x] Implement room availability/booking and event registration routes.
+- [x] Convert Pydantic and service errors to the standard error envelope.
+- [x] Configure local CORS for the React development origin.
+- [x] Generate and inspect OpenAPI output.
+- [x] Add API integration tests using an isolated temporary SQLite database.
+- [x] Provide contract-matching mock fixtures for frontend parallel development.
 
 ### Exit criteria
 
-- [ ] Every documented endpoint exists and returns the documented shape.
-- [ ] OpenAPI references the intended request and response models.
-- [ ] Frontend mock fixtures and real API responses are interchangeable.
+- [x] Every documented endpoint exists and returns the documented shape.
+- [x] OpenAPI references the intended request and response models.
+- [x] Frontend mock fixtures and real API responses are interchangeable.
 
 ---
 
@@ -428,7 +428,7 @@ These may be added as bonuses only after the judged workflow is stable.
 At the time this roadmap was created:
 
 ```text
-29 tests passed
+46 tests passed
 ```
 
 The tests currently cover seed-schema compatibility, strict validation, invalid
@@ -436,10 +436,11 @@ time ranges, empty patches, demo-user enrollment relevance, assignment relevance
 active announcements, discoverable events, and user-specific event registration.
 They now cover persistence migrations, seed imports, restart safety, constraints,
 transaction rollback, CRUD services, personalized reads, availability boundaries,
-idempotency, authorization, and event capacity. They do not yet test HTTP routes,
-frontend behavior, or an LLM.
+idempotency, authorization, event capacity, HTTP routes, OpenAPI exposure, mock
+contracts, error envelopes, and local CORS. They do not yet test frontend behavior
+or an LLM.
 
 ## 8. Immediate next milestone
 
-Proceed with **M5 — FastAPI application and mock boundary**. Routes must remain
-thin adapters over the completed shared service layer.
+Proceed with **M6 — AI agent and real tool calling** and **M7 — React dashboard
+and chat experience**, which may now be developed in parallel against the same API.
