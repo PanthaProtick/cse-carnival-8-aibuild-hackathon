@@ -8,7 +8,8 @@
     "mock": "node mock/server.mjs",
     "mock:reset": "node mock/server.mjs --reset",
     "build": "tsc -b && vite build",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests && node --test mock/server.test.mjs",
+    "test:mock": "node --test mock/server.test.mjs",
     "lint": "eslint ."
   },
   "dependencies": {
