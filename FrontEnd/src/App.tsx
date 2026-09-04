@@ -8,12 +8,14 @@ import { Schedules, Announcements, Assignments } from './pages/Resources'
 import { Rooms } from './pages/Rooms'
 import { Events } from './pages/Events'
 import { Assistant } from './pages/Assistant'
+import { usePremiumPointer } from './usePremiumPointer'
 
 const links = [
   ['/', LayoutDashboard, 'Overview'], ['/schedules', CalendarDays, 'Schedule'], ['/rooms', Building2, 'Rooms'],
   ['/events', CalendarDays, 'Events'], ['/announcements', Bell, 'Announcements'], ['/assignments', ClipboardCheck, 'Assignments'], ['/assistant', Bot, 'AI assistant'],
 ] as const
 export function App() {
+  usePremiumPointer()
   const [open, setOpen] = useState(false)
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: api.me })
   return <div className="app-shell">
