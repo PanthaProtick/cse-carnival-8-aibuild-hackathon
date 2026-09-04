@@ -277,7 +277,7 @@ Status: **In progress — inherited implementation is being hardened against the
 
 - [x] Define a request-scoped `CampusDataGateway` contract that keeps SQLAlchemy
   sessions and caller-supplied identities out of agent tools.
-- [ ] Add fake and service-backed gateway implementations.
+- [x] Add fake and service-backed gateway implementations.
 - [ ] Refactor existing tools to depend on the gateway instead of calling domain
   services directly.
 - [x] Select and configure one tool-calling LLM provider behind a small adapter.
